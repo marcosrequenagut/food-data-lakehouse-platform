@@ -1,11 +1,9 @@
-version: '3.8'
-
 # =========================================
 # Common variables for all Airflow services 
 # =========================================
 x-airflow-common:
   &airflow-common
-  build: .                          # user our Dockerfile
+  build: .                          # use our Dockerfile
   environment:
     &airflow-common-env
     # Execute and DB of Aiflow metadata
@@ -87,17 +85,7 @@ services:
   airflow-init:
     <<: *airflow-common
     container_name: airflow_init
-    command: >
-      bash -c "
-        airflow db init &&
-        airflow users create
-          --username admin
-          --password admin123
-          --firstname Admin
-          --lastname User
-          --role Admin
-          --email admin@foodplatform.com
-      "
+    command: bash -c "airflow db migrate && airflow users create --username admin --password admin123 --firstname Admin --lastname User --role Admin --email admin@foodplatform.com"
     environment:
       <<: *airflow-common-env
     restart: on-failure
