@@ -195,6 +195,100 @@ def transform(**context):
     context["ti"].xcom_push(key="clean_rows", value=final_rows)
 
 # ============================================================
+# TASK3: LOAD
+# ============================================================
+
+def load(**context):
+    """
+    Loads clean data into a PostrgreSQL DB raw.products table
+    """
+
+    batch_id = context["ti"].xcom_pull(key="batch_id", task_ids="extract")
+    clean_path = context["ti"].xcom_pull(key="clean_path", task_ids="transform")
+    clean_rows = context["ti"].xcom_pull(key="clean_rows", task_ids="transform")
+
+    logger.info(f"Loading {clean_rows} rows to PostgreSQL. Batch: {batch_id}")
+
+    df = pd.read_csv(clean_path)
+
+    # Connect using Aiflow Connection
+    hook = PostgresHook(postgres_conn_id="food_postgres")
+    conn = hook.get_conn()
+    cursor = conn.cursor()
+
+    loaded = 0
+    failed = 0
+
+    for _, row in df.iterrows():
+        try:
+            cursor.execute("""
+                INSERT INTO raw.products (
+                    code, product_name, generic_name, quantity,
+                    product_quantity, product_quantity_unit, serving_size,
+                    lang, url, brands_tags, owner,
+                    manufacturing_places_tags, categories_tags,
+                    categories_hierarchy, pnns_groups_1, pnns_groups_2,
+                    food_groups_tags, countries_tags,
+                    countries_hierarchy, origins_tags, purchase_places,
+                    nutriments, nutrition_data_per, nutriscore_grade, nutriscore_score,
+                    nova_group, ecoscore_grade, ecoscore_score, nutrient_levels,
+                    ingredients_text, ingredients_n, allergens_tags, traces_tags,
+                    additives_n, additives_tags, ingredients_analysis_tags,
+                    labels_tags, packaging_tags,
+                    packaging_materials_tags, packaging_recycling_tags,
+                    created_t, last_modified_t, last_updated_t, completeness,
+                    image_url, image_front_url, image_front_small_url,
+                    batch_id, ingested_at
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    )
+            """, tuple(
+                None if pd.isna(v) else v for v in [
+                    row.get("code"), row.get("product_name"), row.get("generic_name"),
+                    row.get("quantity"), row.get("product_quantity"), row.get("product_quantity_unit"),
+                    row.get("serving_size"), row.get("lang"), row.get("url"),
+                    row.get("brands_tags"), row.get("owner"),
+                    row.get("manufacturing_places_tags"),
+                    row.get("categories_tags"), row.get("categories_hierarchy"),
+                    row.get("pnns_groups_1"), row.get("pnns_groups_2"),
+                    row.get("food_groups_tags"),
+                    row.get("countries_tags"),
+                    row.get("countries_hierarchy"),
+                    row.get("origins_tags"), row.get("purchase_places"),
+                    row.get("nutriments"), row.get("nutrition_data_per"),
+                    row.get("nutriscore_grade"), row.get("nutriscore_score"),
+                    row.get("nova_group"), row.get("ecoscore_grade"),
+                    row.get("ecoscore_score"), row.get("nutrient_levels"),
+                    row.get("ingredients_text"), row.get("ingredients_n"),
+                    row.get("allergens_tags"), row.get("traces_tags"),
+                    row.get("additives_n"), row.get("additives_tags"),
+                    row.get("ingredients_analysis_tags"), 
+                    row.get("labels_tags"), 
+                    row.get("packaging_tags"), row.get("packaging_materials_tags"),
+                    row.get("packaging_recycling_tags"), row.get("created_t"),
+                    row.get("last_modified_t"), row.get("last_updated_t"),
+                    row.get("completeness"), row.get("image_url"),
+                    row.get("image_front_url"), row.get("image_front_small_url"),
+                    row.get("batch_id"), row.get("ingested_at")
+                ]
+            ))
+            loaded += 1
+        except Exception as e:
+            logger.error(f"Error inserting rwo {row.get('code')}: {e}")
+            failed += 1
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    logger.info(f"Load complete - loaded: {loaded}, failed: {failed}")
+
+
+# ============================================================
 # DAG DEFINITION
 # ============================================================
 
@@ -211,13 +305,21 @@ with DAG(
     
     task_extract = PythonOperator(
         task_id="extract",
-        python_callable=extract
+        python_callable=extract,
+        provide_context=True
     )
 
     task_transform = PythonOperator(
         task_id="transform",
-        python_callable=transform
+        python_callable=transform,
+        provide_context=True
+    )
+
+    task_load = PythonOperator(
+        task_id="load",
+        python_callable=load,
+        provide_context=True
     )
 
     # Order
-    task_extract >> task_transform
+    task_extract >> task_transform >> task_load

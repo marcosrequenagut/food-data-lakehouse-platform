@@ -69,7 +69,7 @@ services:
       POSTGRES_DB: food_platform
     volumes:
       - postgres_food_data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d   # scripts of the init
+      - ./postgres/init:/docker-entrypoint-initdb.d   # scripts of the init (create a table in postgres)
     ports:
       - "5432:5432"    # exposure to be connected from DBeaver/pgAdmin
     healthcheck:

@@ -1,0 +1,8 @@
+-- ==========================================
+-- FOOD DATA PLATFORM — Schema Initialization
+-- ==========================================
+
+CREATE SCHEMA IF NOT EXISTS raw;
+CREATE SCHEMA IF NOT EXISTS staging;
+CREATE SCHEMA IF NOT EXISTS marts;
+CREATE SCHEMA IF NOT EXISTS audit;

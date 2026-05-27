@@ -42,10 +42,10 @@ CREATE TABLE IF NOT EXISTS raw.products (
     -- Nutrition
     nutriments                TEXT,
     nutrition_data_per        TEXT,
-    nutriscore_grade          VARCHAR(5),
+    nutriscore_grade          TEXT,
     nutriscore_score          NUMERIC,
     nova_group                NUMERIC,
-    ecoscore_grade            VARCHAR(5),
+    ecoscore_grade            TEXT,
     ecoscore_score            NUMERIC,
     nutrient_levels           TEXT,
 

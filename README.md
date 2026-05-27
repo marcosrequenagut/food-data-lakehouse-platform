@@ -1,0 +1,1 @@
+#### Comando para ejecutar en bash archivos de sql:  docker exec -it postgres_food psql -U food_user -d food_platform -f /docker-entrypoint-initdb.d/01_init_schemas.sql
