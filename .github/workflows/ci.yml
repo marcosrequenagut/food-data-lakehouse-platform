@@ -5,7 +5,7 @@
 name: CI Pipeline
 
 # Triggers (when does this pipeline runs)
-on::
+"on":
   push:
     branches: [develop, main] # runs when you push to develop or main
   pull request:
