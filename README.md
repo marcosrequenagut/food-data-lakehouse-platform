@@ -1,1 +1,3 @@
 #### Comando para ejecutar en bash archivos de sql:  docker exec -it postgres_food psql -U food_user -d food_platform -f /docker-entrypoint-initdb.d/01_init_schemas.sql
+
+#### Every time I make a change in Airflow to the PostgreSQL table, I have to run a TRUNCATE so that the previous records are deleted and the changes I made are reflected. Is this because of ON CONFLICT (code) DO NOTHING? Claude replied: The problem is ON CONFLICT (code) DO NOTHING — the products already exist in the table from the previous execution without the fat_level columns. Since the code already exists, nothing new is inserted

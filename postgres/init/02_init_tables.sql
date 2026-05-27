@@ -81,6 +81,12 @@ CREATE TABLE IF NOT EXISTS raw.products (
     ingested_at               TIMESTAMP DEFAULT NOW(),
     batch_id                  VARCHAR(50),
     source                    VARCHAR(50) DEFAULT 'csv'
+
+    -- New columns
+    fat_level                TEXT,
+    salt_level               TEXT,
+    saturated_fat_level      TEXT,
+    sugars_level             TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_raw_products_code
