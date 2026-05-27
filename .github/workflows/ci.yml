@@ -1,0 +1,41 @@
+# ====================================================
+# CI Pipeline — runs on every push to develop and main
+# ====================================================
+
+name: CI Pipeline
+
+# Triggers (when does this pipeline runs)
+on::
+  push:
+    branches: [develop, main] # runs when you push to develop or main
+  pull request:
+    branches: [main]          # runs when you open a PR to main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # GitHub creates a fresh Ubuntu virutal machine for each run
+
+    steps:
+    # Step 1. Download the code from the repository into the virtual machine
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2. Install Python 3.9.13 in the virtual machine
+    # must match the Python version locally
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9.13"
+      
+    # Step 3. Install only the libraries needed to run the tests
+    # We don't install airflow here because our functions are isolated in a script.
+    - name: Install dependencies
+      run: |
+        pip install pytest pandas unidecode
+
+    # Step 4. Run all test inside the tests/ folder
+    # -v flag shows wach test result individually (verbose)
+    # If any test fails, the pipeline fails and GitHub notifies me
+    - name: Run tests
+      run: |
+        pytest tests/ -v
