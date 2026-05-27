@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS raw.products (
     id                        BIGSERIAL PRIMARY KEY,
 
     -- Identification
-    code                      VARCHAR(50),
+    code                      VARCHAR(50) UNIQUE,
     product_name              TEXT,
     generic_name              TEXT,
     quantity                  TEXT,

@@ -3,8 +3,13 @@ from unidecode import unidecode
 import numpy as np
 from datetime import datetime
 import pandas as pd
+import os
+import logging
 
+from airflow.hooks.postgres_hook import PostgresHook
 
+# Initial configuration
+logger = logging.getLogger(__name__)
 
 # Execute the DAG inside the Airflow container in Docker, not in my local machine
 CSV_PATH = "/opt/airflow/data/raw/openfoodfacts_sample.csv"
@@ -52,10 +57,6 @@ JSON_COLUMNS = [
 URL_COLUMNS = [
     "url", "image_url", "image_front_url", "image_front_small_url"
 ]
-
-def load(**context):  
-    hook = PostgresHook(PostgresHook_conn_id="food_postgres")
-    conn = hook.get_conn()
 
 def clean_text(x):
     """
