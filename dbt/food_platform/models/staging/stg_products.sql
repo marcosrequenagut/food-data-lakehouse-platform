@@ -81,7 +81,14 @@ cleaned AS (
         fat_level,
         salt_level,
         saturated_fat_level,
-        sugars_level
+        sugars_level,
+        energy_kcal_100g::NUMERIC       AS energy_kcal_100g,
+        fat_100g::NUMERIC               AS fat_100g,
+        saturated_fat_100g::NUMERIC     AS saturated_fat_100g,
+        sugars_100g::NUMERIC            AS sugars_100g,
+        salt_100g::NUMERIC              AS salt_100g,
+        proteins_100g::NUMERIC          AS proteins_100g,
+        fiber_100g::NUMERIC             AS fiber_100g,
 
         -- Pipeline metadata
         batch_id,
