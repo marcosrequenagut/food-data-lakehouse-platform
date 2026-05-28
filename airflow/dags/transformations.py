@@ -8,7 +8,6 @@ import ast
 import logging
 from pandas import DataFrame
 
-from airflow.hooks.postgres_hook import PostgresHook
 
 # Initial configuration
 logger = logging.getLogger(__name__)
@@ -249,6 +248,8 @@ def load(**context):
     """
     Loads clean data into a PostrgreSQL DB raw.products table
     """
+
+    from airflow.hooks.postgres_hook import PostgresHook
 
     batch_id = context["ti"].xcom_pull(key="batch_id", task_ids="extract")
     clean_path = context["ti"].xcom_pull(key="clean_path", task_ids="transform")
