@@ -80,13 +80,20 @@ CREATE TABLE IF NOT EXISTS raw.products (
     -- Pipeline metadata
     ingested_at               TIMESTAMP DEFAULT NOW(),
     batch_id                  VARCHAR(50),
-    source                    VARCHAR(50) DEFAULT 'csv'
+    source                    VARCHAR(50) DEFAULT 'csv',
 
     -- New columns
     fat_level                TEXT,
     salt_level               TEXT,
     saturated_fat_level      TEXT,
-    sugars_level             TEXT
+    sugars_level             TEXT,
+    energy_kcal_100g         NUMERIC,
+    fat_100g                 NUMERIC,
+    saturated_fat_100g       NUMERIC,
+    sugars_100g              NUMERIC,
+    salt_100g                NUMERIC,
+    proteins_100g            NUMERIC,
+    fiber_100g               NUMERIC
 );
 
 CREATE INDEX IF NOT EXISTS idx_raw_products_code

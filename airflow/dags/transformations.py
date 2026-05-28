@@ -69,6 +69,9 @@ def clean_text(x):
     return unidecode(str(x).lower().strip())
 
 def parse_nutrient_levels(x):
+    """
+    Extracts fat, salt, saturated_fat and sugars from nutrient_levels dict.
+    """
     if x is None or x == "" or (isinstance(x, float) and pd.isna(x)):
         return None, None, None, None
     try:
@@ -86,6 +89,32 @@ def parse_nutrient_levels(x):
     except Exception as e:
         print(f"Error: {e}, value: {x}")
         return None, None, None, None
+    
+def parse_nutrients(x):
+    """
+    Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", "sugars_100g",
+    "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
+    """
+    if x is None or x == "" or (isinstance(x, float) and pd.isna(x)):
+        return (np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
+    try:
+        # Convert string to dict first
+        if isinstance(x, str):
+            d = ast.literal_eval(x)
+        else:
+            d = x
+        return (
+            d.get("energy-kcal_100g", np.nan),
+            d.get("fat_100g", np.nan),
+            d.get("saturated-fat_100g", np.nan),
+            d.get("sugars_100g", np.nan),
+            d.get("salt_100g", np.nan),
+            d.get("proteins_100g", np.nan),
+            d.get("fiber_100g", np.nan),
+        )
+    except Exception as e:
+        print(f"Error: {e}, value: {x}")
+        return (np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
 
 
 def extract(**context):
@@ -188,16 +217,15 @@ def transform(**context):
     df[["fat_level", "salt_level", "saturated_fat_level", "sugars_level"]] = df["nutrient_levels"].apply(
     lambda x: pd.Series(parse_nutrient_levels(x))
     )
-    logger.info(f"fat_level, salt_level, saturated_fat_level, sugars_level CREATED")
+    logger.info(f"COLUMNS fat_level, salt_level, saturated_fat_level, sugars_level CREATED")
 
-    # Debug nutrient_levels parsing
-    sample = df[["nutrient_levels", "fat_level", "salt_level", "saturated_fat_level", "sugars_level"]].head(3)
-    logger.info(f"nutrient_levels sample:\n{sample.to_string()}")
-
-    # Check null count
-    null_count = df["fat_level"].isna().sum()
-    logger.info(f"fat_level nulls: {null_count} / {len(df)}")
     
+    # Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
+    df[["energy_kcal_100g", "fat_100g", "saturated_fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g"]] = df["nutriments"].apply(
+        lambda x: pd.Series(parse_nutrients(x))
+    )
+    logger.info(f"COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g, sugars_100g, salt_100g, proteins_100g, fiber_100g CREATED")
+
     # Add pipeline metadata
     df["batch_id"] = batch_id
     df["ingested_at"] = datetime.now()
@@ -230,6 +258,8 @@ def load(**context):
 
     df = pd.read_csv(clean_path)
 
+    logger.info(f"COLUMNAS DEL DF: {df.columns}")
+
     # Connect using Aiflow Connection
     hook = PostgresHook(postgres_conn_id="food_postgres")
     conn = hook.get_conn()
@@ -257,13 +287,15 @@ def load(**context):
                     packaging_materials_tags, packaging_recycling_tags,
                     created_t, last_modified_t, last_updated_t, completeness,
                     image_url, image_front_url, image_front_small_url,
-                    batch_id, ingested_at, fat_level, salt_level, saturated_fat_level, sugars_level
+                    batch_id, ingested_at, fat_level, salt_level, saturated_fat_level, sugars_level,
+                    energy_kcal_100g, fat_100g, saturated_fat_100g, sugars_100g, salt_100g, proteins_100g, fiber_100g 
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                     )
                     ON CONFLICT (code) DO NOTHING
             """, tuple(
@@ -295,7 +327,11 @@ def load(**context):
                     row.get("image_front_url"), row.get("image_front_small_url"),
                     row.get("batch_id"), row.get("ingested_at"),
                     row.get("fat_level"), row.get("salt_level"),
-                    row.get("saturated_fat_level"), row.get("sugars_level")
+                    row.get("saturated_fat_level"), row.get("sugars_level"),
+                    row.get("energy_kcal_100g"), row.get("fat_100g"),
+                    row.get("saturated_fat_100g"), row.get("sugars_100g"),
+                    row.get("salt_100g"), row.get("proteins_100g"),
+                    row.get("fiber_100g")
                 ]
             ))
             loaded += 1

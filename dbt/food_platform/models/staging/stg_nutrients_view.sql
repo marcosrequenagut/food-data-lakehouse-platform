@@ -1,8 +1,3 @@
--- ======================================================
--- Model: stg_products
--- Description: Cleans and standardizes raw.products data
--- Layer: staging
--- ======================================================
 
 WITH source AS (
     SELECT * FROM raw.products
@@ -15,7 +10,7 @@ nutrients AS (
         salt_level,
         saturated_fat_level,
         sugars_level,
-        nutrient_levels
+        nutrient_levels,
 
         -- Pipeline metadata
         batch_id,
