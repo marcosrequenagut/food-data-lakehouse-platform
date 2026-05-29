@@ -1,6 +1,5 @@
-# =========================================
+
 # Common variables for all Airflow services 
-# =========================================
 x-airflow-common:
   &airflow-common
   build: .                          # use our Dockerfile
@@ -33,14 +32,10 @@ x-airflow-common:
     postgres-airflow:
       condition: service_healthy
 
-# ========
 # SERVICES
-# ========
 services:
 
-  # --------------------------------------
   # PostgreSQL — internal Airflow metadata 
-  # --------------------------------------
   postgres-airflow:
     image: postgres:15
     container_name: postgres_airflow
@@ -57,9 +52,7 @@ services:
       start_period: 5s
     restart: always
 
-  # ----------------------------------------------------------
   # PostgreSQL — DB of the project (raw, staging, marts)
-  # ----------------------------------------------------------
   postgres-food:
     image: postgres:15
     container_name: postgres_food
@@ -79,9 +72,7 @@ services:
       start_period: 5s
     restart: always
 
-  # ----------------------------------------------------------
   # Airflow — initialization (executed only one time)
-  # ----------------------------------------------------------
   airflow-init:
     <<: *airflow-common
     container_name: airflow_init
@@ -90,9 +81,7 @@ services:
       <<: *airflow-common-env
     restart: on-failure
 
-  # ----------------------------------------------------------
   # Airflow — webserver (UI in localhost:8080)
-  # ----------------------------------------------------------
   airflow-webserver:
     <<: *airflow-common
     container_name: airflow_webserver
@@ -110,9 +99,7 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  # ----------------------------------------------------------
   # Airflow — scheduler (execute DAGs)
-  # ----------------------------------------------------------
   airflow-scheduler:
     <<: *airflow-common
     container_name: airflow_scheduler
@@ -122,9 +109,29 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-# ============================================================
+  streamlit:
+    image: python:3.9.13
+    container_name: streamlit_app
+    working_dir: /app
+    volumes:
+      - ./streamlit:/app
+    ports:
+      - "8501:8501"
+    depends_on:
+      postgres-food:
+        condition: service_healthy
+    restart: always
+    command: >
+      bash -c "pip install streamlit psycopg2-binary sqlalchemy -q &&
+               streamlit run app.py --server.port=8501 --server.address=0.0.0.0"
+    environment:
+      POSTGRES_HOST: postgres-food
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: food_platform
+      POSTGRES_USER: food_user
+      POSTGRES_PASSWORD: food_password123
+
 # VOLUMNS — persistence of data
-# ============================================================
 volumes:
   postgres_airflow_data:
   postgres_food_data:
