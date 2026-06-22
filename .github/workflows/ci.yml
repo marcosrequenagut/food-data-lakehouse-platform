@@ -31,7 +31,12 @@ jobs:
       run: |
         pip install pytest pandas unidecode
 
-    # Step 4. Run all test inside the tests/ folder
+    # Step 4. Run linting
+    - name: Run lint (flake8)
+      run: |
+        flake8 .
+
+    # Step 5. Run all test inside the tests/ folder
     # -v flag shows wach test result individually (verbose)
     # If any test fails, the pipeline fails and GitHub notifies me
     - name: Run tests
