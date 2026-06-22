@@ -234,8 +234,10 @@ def transform(**context):
             df["nutriments"]
             .apply(lambda x: pd.Series(parse_nutrients(x)))
             )
-    logger.info("COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g,"
-    "sugars_100g, salt_100g, proteins_100g, fiber_100g CREATED")
+    logger.info(
+        "COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g,"
+        "sugars_100g, salt_100g, proteins_100g, fiber_100g CREATED"
+    )
 
     # Add pipeline metadata
     df["batch_id"] = batch_id
