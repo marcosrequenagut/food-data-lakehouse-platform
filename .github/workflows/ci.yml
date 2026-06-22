@@ -10,6 +10,27 @@ name: CI Pipeline
     branches: [develop, main] # runs when you push to develop or main
 
 jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9.13"
+
+      - name: Install dependencies
+        run: |
+          pip install flake8
+        
+      - name: Run lint (flake8)
+        run: |
+          flake8 .
+
   test:
     runs-on: ubuntu-latest  # GitHub creates a fresh Ubuntu virutal machine for each run
 
@@ -31,12 +52,7 @@ jobs:
       run: |
         pip install pytest pandas unidecode
 
-    # Step 4. Run linting
-    - name: Run lint (flake8)
-      run: |
-        flake8 .
-
-    # Step 5. Run all test inside the tests/ folder
+    # Step 4. Run all test inside the tests/ folder
     # -v flag shows wach test result individually (verbose)
     # If any test fails, the pipeline fails and GitHub notifies me
     - name: Run tests
