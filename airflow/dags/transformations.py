@@ -6,13 +6,12 @@ import pandas as pd
 import os
 import ast
 import logging
-from pandas import DataFrame
 
 
 # Initial configuration
 logger = logging.getLogger(__name__)
 
-# Execute the DAG inside the Airflow container in Docker, not in my local machine
+# Execute the DAG inside the Airflow container (Docker), not in my local machine
 CSV_PATH = "/opt/airflow/data/raw/openfoodfacts_sample.csv"
 
 # Columns needed
@@ -59,6 +58,7 @@ URL_COLUMNS = [
     "url", "image_url", "image_front_url", "image_front_small_url"
 ]
 
+
 def clean_text(x):
     """
     Transforms a string into lowecase and remove special characters
@@ -66,6 +66,7 @@ def clean_text(x):
     if pd.isna(x):
         return x
     return unidecode(str(x).lower().strip())
+
 
 def parse_nutrient_levels(x):
     """
@@ -88,11 +89,12 @@ def parse_nutrient_levels(x):
     except Exception as e:
         print(f"Error: {e}, value: {x}")
         return None, None, None, None
-    
+
 def parse_nutrients(x):
     """
-    Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", "sugars_100g",
-    "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
+    Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", 
+    "sugars_100g", "salt_100g", "proteins_100g",
+    "fiber_100g from nutrient dict.
     """
     if x is None or x == "" or (isinstance(x, float) and pd.isna(x)):
         return (np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
@@ -127,7 +129,7 @@ def extract(**context):
     # Validate if CSV exists
     if not os.path.exists(CSV_PATH):
         raise FileNotFoundError(f"CSV nod found at: {CSV_PATH}")
-    
+
     # Read CSV
     df = pd.read_csv(CSV_PATH)
     logger.info(f"CSV loaded: {df.shape[0]} rows, {df.shape[1]} columns")
@@ -135,7 +137,7 @@ def extract(**context):
     # Validate not empty
     if len(df) == 0:
         raise ValueError("CSV is empty")
-    
+
     # Keep only needed columns
     df = df[COLUMNS]
     logger.info(f"Columns filtered: {len(COLUMNS)} columns kept")
@@ -152,6 +154,7 @@ def extract(**context):
     context["ti"].xcom_push(key="batch_id", value=batch_id)
     context["ti"].xcom_push(key="temp_path", value=temp_path)
     context["ti"].xcom_push(key="total_rows", value=len(df))
+
 
 def transform(**context):
     """
@@ -218,7 +221,6 @@ def transform(**context):
     )
     logger.info(f"COLUMNS fat_level, salt_level, saturated_fat_level, sugars_level CREATED")
 
-    
     # Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
     df[["energy_kcal_100g", "fat_100g", "saturated_fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g"]] = df["nutriments"].apply(
         lambda x: pd.Series(parse_nutrients(x))
@@ -240,10 +242,8 @@ def transform(**context):
     context["ti"].xcom_push(key="clean_path", value=clean_path)
     context["ti"].xcom_push(key="clean_rows", value=final_rows)
 
-# ============================================================
-# TASK3: LOAD
-# ============================================================
 
+# TASK3: LOAD
 def load(**context):
     """
     Loads clean data into a PostrgreSQL DB raw.products table
@@ -289,7 +289,7 @@ def load(**context):
                     created_t, last_modified_t, last_updated_t, completeness,
                     image_url, image_front_url, image_front_small_url,
                     batch_id, ingested_at, fat_level, salt_level, saturated_fat_level, sugars_level,
-                    energy_kcal_100g, fat_100g, saturated_fat_100g, sugars_100g, salt_100g, proteins_100g, fiber_100g 
+                    energy_kcal_100g, fat_100g, saturated_fat_100g, sugars_100g, salt_100g, proteins_100g, fiber_100g
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
@@ -319,8 +319,8 @@ def load(**context):
                     row.get("ingredients_text"), row.get("ingredients_n"),
                     row.get("allergens_tags"), row.get("traces_tags"),
                     row.get("additives_n"), row.get("additives_tags"),
-                    row.get("ingredients_analysis_tags"), 
-                    row.get("labels_tags"), 
+                    row.get("ingredients_analysis_tags"),
+                    row.get("labels_tags"),
                     row.get("packaging_tags"), row.get("packaging_materials_tags"),
                     row.get("packaging_recycling_tags"), row.get("created_t"),
                     row.get("last_modified_t"), row.get("last_updated_t"),

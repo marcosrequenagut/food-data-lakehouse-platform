@@ -13,7 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# TITLE 
+# TITLE
 st.title("🍎 Food Products Data Explorer")
 st.write("Interactive exploration of products, nutrition and countries")
 
@@ -24,9 +24,10 @@ def load_data():
     query = """
         SELECT *
         FROM marts.fact_products"""
-    
+
     df = pd.read_sql(query, engine)
     return df
+
 
 df_products = load_data()
 
@@ -37,6 +38,8 @@ st.dataframe(df_products)
 
 # UNIFY PRODUCTS AND COUNTRIES TABLES
 st.title("Products by Country")
+
+
 def load_products_countries():
     query = """
         WITH bridge_products_countries AS (
@@ -46,16 +49,17 @@ def load_products_countries():
             FROM marts.bridge_product_country b
             JOIN marts.dim_country c ON b.country_name = c.country_name
         )
-        
+
         SELECT
             p.*,
             d.*
         FROM marts.fact_products p
         JOIN bridge_products_countries d ON p.code = d.code_bridge"""
-    
+
     df = pd.read_sql(query, engine)
 
     return df
+
 
 df_products_countries = load_products_countries()
 

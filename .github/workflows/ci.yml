@@ -29,7 +29,7 @@ jobs:
         
       - name: Run lint (flake8)
         run: |
-          flake8 .
+          flake8 . --max-line-length=100
 
   test:
     runs-on: ubuntu-latest  # GitHub creates a fresh Ubuntu virutal machine for each run

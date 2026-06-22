@@ -1,18 +1,10 @@
 import logging
-import uuid
-import unicodedata
-from unidecode import unidecode
-import numpy as np
 from datetime import datetime, timedelta
 from transformations import extract, load, transform
 
-import pandas as pd
-import psycopg2
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
-
-import os
 
 # Initial configuration
 logger = logging.getLogger(__name__)
