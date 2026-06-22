@@ -220,19 +220,21 @@ def transform(**context):
     logger.info(f"{len(columns_to_remove)} Columns removed: {columns_to_remove}")
 
     # Extracts fat, salt, saturated_fat and sugars from nutrient_levels dict.
-    df[["fat_level", "salt_level", "saturated_fat_level", "sugars_level"]] = (
+    cols = ["fat_level", "salt_level", "saturated_fat_level", "sugars_level"]
+    df[cols] = (
         df["nutrient_levels"]
         .apply(lambda x: pd.Series(parse_nutrient_levels(x)))
     )
-    logger.info(f"COLUMNS fat_level, salt_level, saturated_fat_level, sugars_level CREATED")
+    logger.info("COLUMNS fat_level, salt_level, saturated_fat_level, sugars_level CREATED")
 
-    # Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
+    # Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g",
+    # "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
     df[["energy_kcal_100g", "fat_100g", "saturated_fat_100g",
         "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g"]] = (
             df["nutriments"]
             .apply(lambda x: pd.Series(parse_nutrients(x)))
             )
-    logger.info("COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g," \
+    logger.info("COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g,"
     "sugars_100g, salt_100g, proteins_100g, fiber_100g CREATED")
 
     # Add pipeline metadata
@@ -289,7 +291,7 @@ def load(**context):
                     food_groups_tags, countries_tags,
                     countries_hierarchy, origins_tags, purchase_places,
                     nutriments, nutrition_data_per, nutriscore_grade,
-                    nutriscore_score, nova_group, ecoscore_grade, 
+                    nutriscore_score, nova_group, ecoscore_grade,
                     ecoscore_score, nutrient_levels,
                     ingredients_text, ingredients_n, allergens_tags, traces_tags,
                     additives_n, additives_tags, ingredients_analysis_tags,
@@ -313,7 +315,8 @@ def load(**context):
             """, tuple(
                 None if pd.isna(v) else v for v in [
                     row.get("code"), row.get("product_name"), row.get("generic_name"),
-                    row.get("quantity"), row.get("product_quantity"), row.get("product_quantity_unit"),
+                    row.get("quantity"), row.get("product_quantity"),
+                    row.get("product_quantity_unit"),
                     row.get("serving_size"), row.get("lang"), row.get("url"),
                     row.get("brands_tags"), row.get("owner"),
                     row.get("manufacturing_places_tags"),

@@ -35,7 +35,9 @@ def test_clean_text_string():
 
 def test_parse_nutrient_levels_all_keys():
     """All 4 keys present"""
-    result = parse_nutrient_levels("{'fat': 'moderate', 'salt': 'low', 'saturated-fat': 'high', 'sugars': 'low'}")
+    result = parse_nutrient_levels(
+        "{'fat': 'moderate', 'salt': 'low', 'saturated-fat': 'high', 'sugars': 'low'}"
+    )
     assert result == ("moderate", "low", "high", "low")
 
 
