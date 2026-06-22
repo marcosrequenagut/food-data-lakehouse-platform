@@ -1,0 +1,74 @@
+version: 2
+
+models:
+
+    - name: dim_brand
+      description: "Brand dimension"
+      columns: 
+        - name: brand_id
+          description: "Surrogate key"
+          tests:
+            - not_null
+            - unique
+        - name: brand_name
+          description: "Brand name normalized"
+          tests:
+            - not_null
+
+    - name: dim_category
+      description: "Category dimension"
+      columns:
+        - name: category_id
+          description: "Surrogate key"
+          tests:
+            - not_null
+            - unique
+        - name: pnns_groups_1
+          description: "Food group level 1"
+          tests:
+            - not_null
+
+    - name: dim_country
+      description: "Country dimension"
+      columns:
+        - name: country_id
+          description: "Surrogate key"
+          tests:
+            - not_null
+        - name: country_code
+          description: "Country code e.g. en:france"
+          tests:
+            - not_null
+            - unique
+
+    - name: bridge_product_country
+      description: "Many-to-many relationship between products and countries"
+      columns:
+        - name: code
+          description: "Product barcode"
+          tests:
+            - not_null
+        - name: country_code
+          description: "Country code"
+          tests:
+            - not_null
+
+    - name: fact_products
+      description: "Central fact table with product metrics"
+      columns:
+        - name: code
+          description: "Product barcode - primary key"
+          tests:
+            - not_null
+        - name: brand_id
+          description: "FK to dim_brand"
+          tests:
+            - relationships:
+                to: ref('dim_brand')
+                field: brand_id
+        - name: category_id
+          description: "FK to dim_catgory"
+          tests:
+            - relationships:
+                to: ref('dim_category')
+                field: category_id

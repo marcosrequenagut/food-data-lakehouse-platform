@@ -6,7 +6,7 @@ A end-to-end data engineering project built on top of the **Open Food Facts API*
 
 ## 📌 Overview
 
-This project ingests, cleans, models and visualizes food product data from the Open Food Facts API. It covers the full data engineering lifecycle — from raw ingestion to an interactive analytics dashboard.
+This project ingests, cleans, models and visualizes food product data from the Open Food Facts API. It covers the full data engineering lifecycle, from raw ingestion to an interactive analytics dashboard.
 
 ---
 
@@ -159,10 +159,10 @@ dim_category ← fact_products → bridge_product_country → dim_country
 
 Interactive Streamlit dashboard with:
 
-- **Global filters** — country, category, nutriscore grade, nova group, calorie range
-- **Dynamic KPIs** — total products, average nutriscore, average calories
-- **Interactive table** — sortable, searchable product explorer
-- **Charts** — nutriscore distribution, top brands, nova group distribution
+- **Global filters** : country, category, nutriscore grade, nova group, calorie range
+- **Dynamic KPIs** : total products, average nutriscore, average calories
+- **Interactive table** : sortable, searchable product explorer
+- **Charts** : nutriscore distribution, top brands, nova group distribution
 
 ---
 

@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stg_products
+    description: "Cleaned and standardized products from raw layer"
+    columns:
+
+      - name: code
+        description: "Porduct barcode - primary key"
+        tests:
+          - not_null
+          - unique
+
+      - name: product_name
+        description: "Product name"
+        tests:
+          - not_null
+        
+      - name: nutriscore_grade
+        description: "Nutriscore grade A/B/C/D/E"
+        tests:
+          - accepted_values:
+              values: ['a', 'b', 'c', 'd', 'e']
+
+      - name: nova_group
+        description: "NOVA group 1-4"
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4]
+
+      - name: completeness
+        description: "Completeness score between 0 and 1"
+        tests:
+          - not_null

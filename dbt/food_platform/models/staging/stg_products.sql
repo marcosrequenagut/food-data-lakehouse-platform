@@ -42,7 +42,10 @@ cleaned AS (
         -- Nutrition
         nutriments,
         nutrition_data_per,
-        nutriscore_grade,
+        CASE
+            WHEN TRIM(nutriscore_grade) in ('not-applicable', 'unknown') THEN NULL
+            ELSE nutriscore_grade
+        END AS nutriscore_grade,
         nutriscore_score::NUMERIC       AS nutriscore_score,
         nova_group::NUMERIC             AS nova_group,
         ecoscore_grade,
