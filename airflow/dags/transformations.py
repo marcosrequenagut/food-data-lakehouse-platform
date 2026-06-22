@@ -90,9 +90,10 @@ def parse_nutrient_levels(x):
         print(f"Error: {e}, value: {x}")
         return None, None, None, None
 
+
 def parse_nutrients(x):
     """
-    Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", 
+    Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g",
     "sugars_100g", "salt_100g", "proteins_100g",
     "fiber_100g from nutrient dict.
     """
@@ -185,21 +186,24 @@ def transform(**context):
 
     # Normalice the completeness column with values between 0 and 1
     df["completeness"] = df["completeness"].clip(0, 1)
-    logger.info(f"Normalice the completeness column with values between 0 and 1.")
+    logger.info("Normalice the completeness column with values between 0 and 1.")
 
     # Normalizes text columns (lowercase  + remove special characters)
     for column in df.columns:
         if column in TEXT_COLUMNS:
             df[column] = df[column].apply(clean_text)
-    logger.info(f"Texts columns normalized")
+    logger.info("Texts columns normalized")
 
     # Replaces 'xx' with 'unknown' in the lang column.
     df["lang"] = df["lang"].replace("xx", "unknown")
-    logger.info(f"Column lang transformed")
+    logger.info("Column lang transformed")
 
     # Converts empty tags [] of the column manufacturing_places_tags to NaN values.
-    df["manufacturing_places_tags"] = df["manufacturing_places_tags"].apply(lambda x: np.nan if x == [] or '[]' else x)
-    logger.info(f"Column manufacturing_places_tags transformed")
+    df["manufacturing_places_tags"] = (
+        df["manufacturing_places_tags"]
+        .apply(lambda x: np.nan if x == [] or '[]' else x)
+    )
+    logger.info("Column manufacturing_places_tags transformed")
 
     # Keep column_tags and remove columns.
     columns_tags = [col for col in df.columns if col.endswith('_tags')]
@@ -216,16 +220,20 @@ def transform(**context):
     logger.info(f"{len(columns_to_remove)} Columns removed: {columns_to_remove}")
 
     # Extracts fat, salt, saturated_fat and sugars from nutrient_levels dict.
-    df[["fat_level", "salt_level", "saturated_fat_level", "sugars_level"]] = df["nutrient_levels"].apply(
-    lambda x: pd.Series(parse_nutrient_levels(x))
+    df[["fat_level", "salt_level", "saturated_fat_level", "sugars_level"]] = (
+        df["nutrient_levels"]
+        .apply(lambda x: pd.Series(parse_nutrient_levels(x)))
     )
     logger.info(f"COLUMNS fat_level, salt_level, saturated_fat_level, sugars_level CREATED")
 
     # Extracts energy-kcal_100g", "fat_100g", "saturated-fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g from nutrient dict.
-    df[["energy_kcal_100g", "fat_100g", "saturated_fat_100g", "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g"]] = df["nutriments"].apply(
-        lambda x: pd.Series(parse_nutrients(x))
-    )
-    logger.info(f"COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g, sugars_100g, salt_100g, proteins_100g, fiber_100g CREATED")
+    df[["energy_kcal_100g", "fat_100g", "saturated_fat_100g",
+        "sugars_100g", "salt_100g", "proteins_100g", "fiber_100g"]] = (
+            df["nutriments"]
+            .apply(lambda x: pd.Series(parse_nutrients(x)))
+            )
+    logger.info("COLUMNS energy_kcal_100g, fat_100g, saturated_fat_100g," \
+    "sugars_100g, salt_100g, proteins_100g, fiber_100g CREATED")
 
     # Add pipeline metadata
     df["batch_id"] = batch_id
@@ -280,16 +288,19 @@ def load(**context):
                     categories_hierarchy, pnns_groups_1, pnns_groups_2,
                     food_groups_tags, countries_tags,
                     countries_hierarchy, origins_tags, purchase_places,
-                    nutriments, nutrition_data_per, nutriscore_grade, nutriscore_score,
-                    nova_group, ecoscore_grade, ecoscore_score, nutrient_levels,
+                    nutriments, nutrition_data_per, nutriscore_grade,
+                    nutriscore_score, nova_group, ecoscore_grade, 
+                    ecoscore_score, nutrient_levels,
                     ingredients_text, ingredients_n, allergens_tags, traces_tags,
                     additives_n, additives_tags, ingredients_analysis_tags,
                     labels_tags, packaging_tags,
                     packaging_materials_tags, packaging_recycling_tags,
                     created_t, last_modified_t, last_updated_t, completeness,
                     image_url, image_front_url, image_front_small_url,
-                    batch_id, ingested_at, fat_level, salt_level, saturated_fat_level, sugars_level,
-                    energy_kcal_100g, fat_100g, saturated_fat_100g, sugars_100g, salt_100g, proteins_100g, fiber_100g
+                    batch_id, ingested_at, fat_level, salt_level,
+                    saturated_fat_level, sugars_level, energy_kcal_100g,
+                    fat_100g, saturated_fat_100g, sugars_100g, salt_100g,
+                    proteins_100g, fiber_100g
                     ) VALUES (
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,

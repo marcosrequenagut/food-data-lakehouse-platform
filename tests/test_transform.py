@@ -1,16 +1,13 @@
 import sys
 import os
 import pandas as pd
+from transformations import clean_text, parse_nutrient_levels
 
 # Add the ariflow/dags folder to the path so we can import the DAG functions
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../airflow/dags"))
 
-from transformations import clean_text, parse_nutrient_levels
 
-# ==================
-# TESTS — clean_text
-# ==================
-
+# TESTS
 def test_clean_text_lowercase():
     """Text should be converted to lowercase"""
     assert clean_text("NESTLE") == "nestle"

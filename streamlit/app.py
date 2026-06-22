@@ -43,7 +43,7 @@ st.title("Products by Country")
 def load_products_countries():
     query = """
         WITH bridge_products_countries AS (
-            SELECT 
+            SELECT
                 b.code AS code_bridge,
                 c.country_name
             FROM marts.bridge_product_country b

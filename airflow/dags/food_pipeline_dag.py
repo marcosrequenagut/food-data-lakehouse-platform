@@ -4,7 +4,6 @@ from transformations import extract, load, transform
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.hooks.postgres_hook import PostgresHook
 
 # Initial configuration
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ with DAG(
     default_args=default_args,
     tags=["food", "ingestion", "raw"],
 ) as dag:
-    
+
     task_extract = PythonOperator(
         task_id="extract",
         python_callable=extract,
