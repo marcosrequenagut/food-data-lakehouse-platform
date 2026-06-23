@@ -125,7 +125,6 @@ def fetch_page(session, url, params, headers, max_retries=3):
     max_retries=3 -> initial try + 2 retries
     """
     import time
-    import random
     import requests
 
     for attempt in range(1, max_retries + 1):
@@ -139,7 +138,7 @@ def fetch_page(session, url, params, headers, max_retries=3):
 
             if response.status_code == 200:
                 return response.json()
-            
+
             logger.warning(
                 f"Page {params.get('page')} failed (status {response.status_code}), "
                 f"attempt {attempt}/{max_retries}. Retrying..."
@@ -158,6 +157,7 @@ def fetch_page(session, url, params, headers, max_retries=3):
     logger.error(f"Page {params.get('page')} failed after {max_retries} attempts")
     return None
 
+
 def extract(**context):
     """
     Fetches data from Open Food Facts API and saves it as CSV.
@@ -174,7 +174,7 @@ def extract(**context):
             "User-Agent": "Mozilla/5.0 (Data Engineering Project - student)"
         }
     TOTAL_PAGES = 10
-    
+
     logger.info("Starting extraction from Open Food Facts API...")
     all_products = []
 
@@ -202,7 +202,8 @@ def extract(**context):
     project_root = os.path.dirname(os.path.abspath("__file__"))
     output_path = os.path.join(project_root, "data", "raw", "openfoodfacts_sample.csv")
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)  # Create the directory if it doesn't exists
+    # Create the directory if it doesn't exists
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     logger.info(f"Saved to: {output_path}")
     logger.info("Saved to CSV!")
