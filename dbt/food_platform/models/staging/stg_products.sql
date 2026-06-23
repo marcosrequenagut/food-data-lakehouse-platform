@@ -1,11 +1,9 @@
--- ======================================================
 -- Model: stg_products
 -- Description: Cleans and standardizes raw.products data
 -- Layer: staging
--- ======================================================
 
 WITH source AS (
-    SELECT * FROM raw.products
+    SELECT * FROM {{ source('raw', 'products') }}
 ),
 
 cleaned AS (

@@ -119,25 +119,95 @@ def parse_nutrients(x):
         return (np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
 
 
+def fetch_page(session, url, params, headers, max_retries=3):
+    """
+    Try to load a page from the API with retries.
+    max_retries=3 -> initial try + 2 retries
+    """
+    import time
+    import random
+    import requests
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = session.get(
+                url,
+                params=params,
+                headers=headers,
+                timeout=30
+            )
+
+            if response.status_code == 200:
+                return response.json()
+            
+            logger.warning(
+                f"Page {params.get('page')} failed (status {response.status_code}), "
+                f"attempt {attempt}/{max_retries}. Retrying..."
+            )
+
+        except requests.exceptions.RequestException as e:
+            logger.warning(
+                f"Request exception on page {params.get('page')}: {e}, "
+                f"attempt {attempt}/{max_retries}. Retrying..."
+            )
+
+        # If it is not the last retry -> wait 1s
+        if attempt < max_retries:
+            time.sleep(1)
+
+    logger.error(f"Page {params.get('page')} failed after {max_retries} attempts")
+    return None
+
 def extract(**context):
     """
-    Reads CSV file and validates is has data.
+    Fetches data from Open Food Facts API and saves it as CSV.
+    If it fails, it retries 2 times with a 5 seconds delay.
     Pushes batch_id and row count to Xcom
     """
+    import requests
+    import time
+
+    # Bring 100 products of the page 1
+    session = requests.Session()
+    API_URL = "https://world.openfoodfacts.org/api/v2/search"
+    HEADERS = {
+            "User-Agent": "Mozilla/5.0 (Data Engineering Project - student)"
+        }
+    TOTAL_PAGES = 10
+    
+    logger.info("Starting extraction from Open Food Facts API...")
+    all_products = []
+
+    for page in range(1, TOTAL_PAGES + 1):
+        logger.info(f"Fetching page {page}/{TOTAL_PAGES}...")
+        params = {
+            "page_size": 100,
+            "page": page
+        }
+
+        data = fetch_page(session, API_URL, params, HEADERS)
+        if data:
+            products = data.get("products", [])
+            all_products.extend(products)
+            logger.info(f"  → {len(products)} products fetched. Total: {len(all_products)}")
+        else:
+            logger.error(f"  → Failed to fetch page {page}, skipping...")
+
+        time.sleep(1)  # Respect the limit rate of the API
+
+    logger.info(f"\nTotal products fetched: {len(all_products)}")
+
+    # Save to a CSV
+    df = pd.DataFrame(all_products)
+    project_root = os.path.dirname(os.path.abspath("__file__"))
+    output_path = os.path.join(project_root, "data", "raw", "openfoodfacts_sample.csv")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)  # Create the directory if it doesn't exists
+    df.to_csv(output_path, index=False)
+    logger.info(f"Saved to: {output_path}")
+    logger.info("Saved to CSV!")
 
     logger.info(f"Reading CSV from : {CSV_PATH}")
-
-    # Validate if CSV exists
-    if not os.path.exists(CSV_PATH):
-        raise FileNotFoundError(f"CSV nod found at: {CSV_PATH}")
-
-    # Read CSV
-    df = pd.read_csv(CSV_PATH)
-    logger.info(f"CSV loaded: {df.shape[0]} rows, {df.shape[1]} columns")
-
-    # Validate not empty
-    if len(df) == 0:
-        raise ValueError("CSV is empty")
 
     # Keep only needed columns
     df = df[COLUMNS]
