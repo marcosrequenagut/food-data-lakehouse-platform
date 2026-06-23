@@ -65,7 +65,7 @@ SELECT
 
 FROM products p
 LEFT JOIN brands b
-    ON TRIM(REPLACE(REPLACE(SPLIT_PART(REPLACE(REPLACE(p.brands_tags, '[', ''), ']', ''), ',', 1), '"', ''), '''', '')) = b.brand_name
+    ON {{ extract_first_tag('p.brands_tags')}} = b.brand_name
 LEFT JOIN categories c
     ON p.pnns_groups_1 = c.pnns_groups_1
     AND p.pnns_groups_2 = c.pnns_groups_2

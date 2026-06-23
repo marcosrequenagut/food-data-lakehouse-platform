@@ -6,16 +6,7 @@
 
 with brands AS (
     SELECT DISTINCT
-        TRIM(
-            REPLACE(
-                REPLACE(
-                    SPLIT_PART(
-                        REPLACE(REPLACE(brands_tags, '[', ''), ']', ''),
-                        ',', 1
-                    ),
-                '"',''),
-            '''', '')
-        ) AS brand_name,
+        {{ extract_first_tag('brands_tags') }} AS brand_name,
         owner
     FROM {{ ref('stg_products') }}
     WHERE brands_tags IS NOT NULL
