@@ -1,8 +1,6 @@
--- ============================
 -- Model: dim_brand
 -- Description: Brand dimension
 -- Layer: marts
--- ============================
 
 with brands AS (
     SELECT DISTINCT
