@@ -19,6 +19,9 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
+# Define the dbt Hooks
+on-run-start:
+  - "CREATE TABLE IF NOT EXISTS audit.model_runs (id SERIAL PRIMARY KEY, model_name VARCHAR(100), run_at TIMESTAMP DEFAULT current_timestamp)"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -34,3 +37,4 @@ models:
     marts:
       +materialized: table
       +schema: marts
+      +post-hook: "INSERT INTO audit.model_runs (model_name, run_at) VALUES ('{{ this.name }}', current_timestamp)"

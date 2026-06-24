@@ -3,7 +3,7 @@
             REPLACE(
                 REPLACE(
                     SPLIT_PART(
-                        REPLACE(REPLACE(column_name, '[', ''), ']', ''),
+                        REPLACE(REPLACE({{ column_name }}, '[', ''), ']', ''),
                         ',', 1
                     ),
                 '"',''),
