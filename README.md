@@ -168,17 +168,21 @@ Applies the following cleaning rules:
 
 ### Marts Layer (Star Schema + Aggregations)
 
-```
-                    dim_brand
-                        ↑
-bridge_product_brand ───┤
-                        │
-dim_category ←── fact_products ──→ bridge_product_country ──→ dim_country
-                        │
-                   stg_nutrients
-                        ↓
-              mart_nutrient_profile
-              mart_brand_quality
+```mermaid
+flowchart LR
+    raw[(raw.products)] --> stg_products
+    raw --> stg_nutrients
+    stg_products --> dim_brand
+    stg_products --> dim_category
+    stg_products --> dim_country
+    stg_products --> bridge_product_country
+    stg_products --> bridge_product_brand
+    stg_products --> fact_products
+    stg_nutrients --> mart_nutrient_profile
+    stg_products --> mart_nutrient_profile
+    stg_nutrients --> mart_brand_quality
+    bridge_product_brand --> mart_brand_quality
+    dim_country --> bridge_product_country
 ```
 
 | Table | Schema | Type | Description |
