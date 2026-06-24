@@ -28,6 +28,7 @@ x-airflow-common:
     - ./airflow/logs:/opt/airflow/logs         # logs of execution
     - ./airflow/plugins:/opt/airflow/plugins   # plugins custom
     - ./data:/opt/airflow/data                 # data raw (CSV)
+    - ./dbt:/opt/airflow/dbt                   # dbt volume
   depends_on:
     postgres-airflow:
       condition: service_healthy

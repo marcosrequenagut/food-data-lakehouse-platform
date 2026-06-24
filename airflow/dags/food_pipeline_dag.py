@@ -4,6 +4,7 @@ from transformations import extract, load, transform
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 
 # Initial configuration
 logger = logging.getLogger(__name__)
@@ -16,6 +17,8 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
     "email_on_failure": False,
 }
+
+DBT_DIR = "/opt/airflow/dbt/food_platform"
 
 # ============================================================
 # DAG DEFINITION
@@ -50,5 +53,27 @@ with DAG(
         provide_context=True
     )
 
+    task_dbt_run = BashOperator(
+        task_id="dbt_run",
+        bash_command=f"cd {DBT_DIR} && dbt run --profiles-dir ."
+    )
+
+    task_dbt_snapshot = BashOperator(
+        task_id="dbt_snapshot",
+        bash_command=f"cd {DBT_DIR} && dbt snapshot --profiles-dir ."
+    )
+
+    task_dbt_test = BashOperator(
+        task_id="dbt_test",
+        bash_command=f"cd {DBT_DIR} && dbt test --profiles-dir ."
+    )
+
     # Order
-    task_extract >> task_transform >> task_load
+    (
+        task_extract
+        >> task_transform
+        >> task_load
+        >> task_dbt_run
+        >> task_dbt_snapshot
+        >> task_dbt_test
+    )

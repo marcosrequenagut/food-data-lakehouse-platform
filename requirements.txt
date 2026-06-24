@@ -4,3 +4,5 @@ requests
 psycopg2-binary
 sqlalchemy
 unidecode
+dbt-core==1.7.16
+dbt-postgres==1.7.16

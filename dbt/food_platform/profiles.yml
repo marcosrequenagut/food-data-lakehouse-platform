@@ -3,7 +3,7 @@ food_platform:
   outputs:
     dev:
       type: postgres
-      host: localhost
+      host: postgres_food
       port: 5432
       user: food_user
       password: food_password123
