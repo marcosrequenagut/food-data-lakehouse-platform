@@ -144,16 +144,16 @@ Applies the following cleaning rules:
 - Logs loaded and failed rows
 
 ### dbt Run
-- Materializa todos los modelos de staging y marts
-- `on-run-start` crea automáticamente `audit.model_runs` si no existe
-- `post-hook` registra cada modelo materializado en la tabla de auditoría
+- Materializes all staging and mart models
+- `on-run-start` automatically creates `audit.model_runs` if it does not exist
+- `post-hook` logs each materialized model into the audit table
 
 ### dbt Snapshot
-- Ejecuta `products_snapshot` para capturar cambios en productos (SCD Type 2)
+- Executes `products_snapshot` to capture product changes (SCD Type 2)
 - Tracks: nutriscore_grade, ecoscore_grade, nova_group, nutrient levels, owner
 
 ### dbt Test
-- Ejecuta todos los tests genéricos y singulares definidos en `schema.yml` y `tests/`
+- Runs all generic and singular tests defined in `schema.yml` and `tests/`
 
 ---
 
@@ -163,8 +163,8 @@ Applies the following cleaning rules:
 
 | Model | Schema | Type | Description |
 |-------|--------|------|-------------|
-| `stg_products` | staging | View | Datos generales limpios y estandarizados |
-| `stg_nutrients` | staging | View | Columnas nutricionales limpias (100g values + levels) |
+| `stg_products` | staging | View | Cleaned and standardized general product data |
+| `stg_nutrients` | staging | View | Cleaned nutritional columns (100g values + levels) |
 
 ### Marts Layer (Star Schema + Aggregations)
 
@@ -183,22 +183,22 @@ dim_category ←── fact_products ──→ bridge_product_country ──→ 
 
 | Table | Schema | Type | Description |
 |-------|--------|------|-------------|
-| `dim_brand` | marts | Table | Brand dimension (sin code, dimensión pura) |
+| `dim_brand` | marts | Table | Brand dimension (without code, pure dimension) |
 | `dim_category` | marts | Table | Category dimension (pnns groups) |
 | `dim_country` | marts | Table | Country dimension |
 | `bridge_product_country` | marts | Table | Product-country many-to-many |
 | `bridge_product_brand` | marts | Table | Product-brand many-to-many |
 | `fact_products` | marts | Table | Central fact table with metrics |
-| `mart_nutrient_profile` | marts | Table | Perfil nutricional medio por categoría pnns_groups_1 |
-| `mart_brand_quality` | marts | Table | Ranking de marcas por valores nutricionales |
+| `mart_nutrient_profile` | marts | Table | Nutritional average profile per category Perfil pnns_groups_1 |
+| `mart_brand_quality` | marts | Table | Ranking of brands by nutritional values |
 
 ### Audit Layer
 
 | Table | Schema | Type | Description |
 |-------|--------|------|-------------|
-| `model_runs` | audit | Table | Registro automático de cada modelo materializado |
+| `model_runs` | audit | Table | Automatic log of each materialized model |
 
-Creada automáticamente con `on-run-start` en cada `dbt run`. El `post-hook` inserta una fila por modelo de marts con su nombre y timestamp.
+Automatically created with on-run-start on every dbt run. The post-hook inserts a row per marts model with its name and timestamp.
 
 ---
 
@@ -207,12 +207,12 @@ Creada automáticamente con `on-run-start` en cada `dbt run`. El `post-hook` ins
 | Feature | Description |
 |---------|-------------|
 | Sources | `sources.yml` con freshness checks (warn: 24h, error: 48h) |
-| Macros | `extract_first_tag(column_name)` — extrae y limpia el primer tag de columnas `_tags` |
-| Snapshots | `products_snapshot` — SCD Type 2 sobre cambios en productos |
+| Macros | `extract_first_tag(column_name)` — extracts and cleans the first columns tag `_tags` |
+| Snapshots | `products_snapshot` — SCD Type 2 about products changes |
 | Generic Tests | `not_null`, `unique`, `accepted_values`, `relationships` |
-| Singular Tests | Tests SQL personalizados con lógica de negocio |
-| Hooks | `on-run-start` + `post-hook` para auditoría automática |
-| Schema separation | Macro `generate_schema_name` para evitar prefijos de dbt |
+| Singular Tests | Personalized SQL Tests with business logic|
+| Hooks | `on-run-start` + `post-hook` for automatic auditories |
+| Schema separation | Macro `generate_schema_name` to avoid dbt prefixes |
 
 ---
 
@@ -322,5 +322,5 @@ CI/CD pipeline runs automatically on every push to `develop` and `main` via GitH
 ---
 
 ## 👤 Author
-Juan Marcos Requena Gutiérrez
+Juan Marcos Requena Gutiérrez |
 Built as a mid-level data engineering portfolio project.
