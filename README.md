@@ -19,9 +19,11 @@ Open Food Facts API
         ↓
 RAW LAYER — PostgreSQL (raw.products)
         ↓
-STAGING LAYER — dbt (staging.stg_products)
+STAGING LAYER — dbt (stg_products, stg_nutrients)
         ↓
-MARTS LAYER — dbt (star schema)
+MARTS LAYER — dbt (star schema + aggregation marts)
+        ↓
+AUDIT LAYER — dbt Hooks (audit.model_runs)
         ↓
 DASHBOARD — Streamlit
 ```
@@ -59,15 +61,25 @@ food-data-lakehouse-platform/
 │   └── food_platform/
 │       ├── models/
 │       │   ├── staging/
-│       │   │   └── stg_products.sql   # Staging view
+│       │   │   ├── stg_products.sql       # Staging view — datos generales
+│       │   │   ├── stg_nutrients.sql      # Staging view — columnas nutricionales
+│       │   │   └── sources.yml            # Source definitions + freshness checks
 │       │   └── marts/
 │       │       ├── dim_brand.sql
 │       │       ├── dim_category.sql
 │       │       ├── dim_country.sql
 │       │       ├── bridge_product_country.sql
-│       │       └── fact_products.sql
+│       │       ├── bridge_product_brand.sql
+│       │       ├── fact_products.sql
+│       │       ├── mart_nutrient_profile.sql
+│       │       └── mart_brand_quality.sql
 │       ├── macros/
-│       │   └── generate_schema_name.sql
+│       │   ├── generate_schema_name.sql
+│       │   └── extract_first_tag.sql
+│       ├── snapshots/
+│       │   └── products_snapshot.sql
+│       ├── tests/
+│       │   └── assert_*.sql               # Singular tests
 │       └── profiles.yml
 │
 ├── postgres/
@@ -99,14 +111,14 @@ food-data-lakehouse-platform/
 
 ## 🔄 Pipeline
 
-The Airflow DAG `food_pipeline` runs daily and executes 3 tasks:
+The Airflow DAG `food_pipeline` runs daily and executes 6 tasks:
 
 ```
-[extract] → [transform] → [load]
+[extract] → [transform] → [load] → [dbt_run] → [dbt_snapshot] → [dbt_test]
 ```
 
 ### Extract
-- Reads CSV from Open Food Facts API
+- Reads data from Open Food Facts API (10 pages × 100 products)
 - Validates file exists and is not empty
 - Generates a unique `batch_id` for traceability
 - Passes metadata to next task via XCom
@@ -131,27 +143,76 @@ Applies the following cleaning rules:
 - Uses `ON CONFLICT (code) DO NOTHING` to avoid duplicates
 - Logs loaded and failed rows
 
+### dbt Run
+- Materializa todos los modelos de staging y marts
+- `on-run-start` crea automáticamente `audit.model_runs` si no existe
+- `post-hook` registra cada modelo materializado en la tabla de auditoría
+
+### dbt Snapshot
+- Ejecuta `products_snapshot` para capturar cambios en productos (SCD Type 2)
+- Tracks: nutriscore_grade, ecoscore_grade, nova_group, nutrient levels, owner
+
+### dbt Test
+- Ejecuta todos los tests genéricos y singulares definidos en `schema.yml` y `tests/`
+
 ---
 
-## 🗄️ Data Model (Star Schema)
+## 🗄️ Data Model
+
+### Staging Layer
+
+| Model | Schema | Type | Description |
+|-------|--------|------|-------------|
+| `stg_products` | staging | View | Datos generales limpios y estandarizados |
+| `stg_nutrients` | staging | View | Columnas nutricionales limpias (100g values + levels) |
+
+### Marts Layer (Star Schema + Aggregations)
 
 ```
-         dim_brand
-             ↑
-dim_category ← fact_products → bridge_product_country → dim_country
+                    dim_brand
+                        ↑
+bridge_product_brand ───┤
+                        │
+dim_category ←── fact_products ──→ bridge_product_country ──→ dim_country
+                        │
+                   stg_nutrients
+                        ↓
+              mart_nutrient_profile
+              mart_brand_quality
 ```
-
-### Tables
 
 | Table | Schema | Type | Description |
 |-------|--------|------|-------------|
-| `raw.products` | raw | Table | Raw ingested data |
-| `stg_products` | staging | View | Cleaned and standardized data |
-| `dim_brand` | marts | Table | Brand dimension |
+| `dim_brand` | marts | Table | Brand dimension (sin code, dimensión pura) |
 | `dim_category` | marts | Table | Category dimension (pnns groups) |
 | `dim_country` | marts | Table | Country dimension |
 | `bridge_product_country` | marts | Table | Product-country many-to-many |
+| `bridge_product_brand` | marts | Table | Product-brand many-to-many |
 | `fact_products` | marts | Table | Central fact table with metrics |
+| `mart_nutrient_profile` | marts | Table | Perfil nutricional medio por categoría pnns_groups_1 |
+| `mart_brand_quality` | marts | Table | Ranking de marcas por valores nutricionales |
+
+### Audit Layer
+
+| Table | Schema | Type | Description |
+|-------|--------|------|-------------|
+| `model_runs` | audit | Table | Registro automático de cada modelo materializado |
+
+Creada automáticamente con `on-run-start` en cada `dbt run`. El `post-hook` inserta una fila por modelo de marts con su nombre y timestamp.
+
+---
+
+## 🔧 dbt Features Implemented
+
+| Feature | Description |
+|---------|-------------|
+| Sources | `sources.yml` con freshness checks (warn: 24h, error: 48h) |
+| Macros | `extract_first_tag(column_name)` — extrae y limpia el primer tag de columnas `_tags` |
+| Snapshots | `products_snapshot` — SCD Type 2 sobre cambios en productos |
+| Generic Tests | `not_null`, `unique`, `accepted_values`, `relationships` |
+| Singular Tests | Tests SQL personalizados con lógica de negocio |
+| Hooks | `on-run-start` + `post-hook` para auditoría automática |
+| Schema separation | Macro `generate_schema_name` para evitar prefijos de dbt |
 
 ---
 
@@ -261,5 +322,5 @@ CI/CD pipeline runs automatically on every push to `develop` and `main` via GitH
 ---
 
 ## 👤 Author
-
+Juan Marcos Requena Gutiérrez
 Built as a mid-level data engineering portfolio project.
