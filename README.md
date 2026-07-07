@@ -61,8 +61,8 @@ food-data-lakehouse-platform/
 │   └── food_platform/
 │       ├── models/
 │       │   ├── staging/
-│       │   │   ├── stg_products.sql       # Staging view — datos generales
-│       │   │   ├── stg_nutrients.sql      # Staging view — columnas nutricionales
+│       │   │   ├── stg_products.sql       # Staging view — data
+│       │   │   ├── stg_nutrients.sql      # Staging view — cnutritional columns
 │       │   │   └── sources.yml            # Source definitions + freshness checks
 │       │   └── marts/
 │       │       ├── dim_brand.sql
@@ -166,7 +166,7 @@ Applies the following cleaning rules:
 | `stg_products` | staging | View | Cleaned and standardized general product data |
 | `stg_nutrients` | staging | View | Cleaned nutritional columns (100g values + levels) |
 
-### Marts Layer (Star Schema + Aggregations)
+### Lineage graph of DBT models
 
 ```mermaid
 flowchart LR
@@ -182,7 +182,7 @@ flowchart LR
     stg_products --> mart_nutrient_profile
     stg_nutrients --> mart_brand_quality
     bridge_product_brand --> mart_brand_quality
-    dim_country --> bridge_product_country
+    bridge_product_country --> dim_country
 ```
 
 | Table | Schema | Type | Description |
