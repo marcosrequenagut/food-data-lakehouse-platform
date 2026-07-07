@@ -57,7 +57,7 @@ with DAG(
         task_id="dbt_build",
         bash_command=f"cd {DBT_DIR} && dbt build --profiles-dir ."
     )
-    
+
     # Order
     (
         task_extract
