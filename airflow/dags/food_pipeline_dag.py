@@ -53,27 +53,15 @@ with DAG(
         provide_context=True
     )
 
-    task_dbt_run = BashOperator(
-        task_id="dbt_run",
-        bash_command=f"cd {DBT_DIR} && dbt run --profiles-dir ."
+    task_dbt_build = BashOperator(
+        task_id="dbt_build",
+        bash_command=f"cd {DBT_DIR} && dbt build --profiles-dir ."
     )
-
-    task_dbt_snapshot = BashOperator(
-        task_id="dbt_snapshot",
-        bash_command=f"cd {DBT_DIR} && dbt snapshot --profiles-dir ."
-    )
-
-    task_dbt_test = BashOperator(
-        task_id="dbt_test",
-        bash_command=f"cd {DBT_DIR} && dbt test --profiles-dir ."
-    )
-
+    
     # Order
     (
         task_extract
         >> task_transform
         >> task_load
-        >> task_dbt_run
-        >> task_dbt_snapshot
-        >> task_dbt_test
+        >> task_dbt_build
     )
