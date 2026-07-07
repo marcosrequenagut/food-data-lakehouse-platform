@@ -98,6 +98,11 @@ cleaned AS (
     FROM source
     WHERE code IS NOT NULL
         AND product_name IS NOT NULL
+        AND energy_kcal_100g < 1000
+        AND sugars_100g < 100
+        AND fat_100g < 100
+        AND proteins_100g < 100
+        AND salt_100g < 100
 )
 
 SELECT * FROM cleaned
